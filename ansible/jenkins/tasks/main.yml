@@ -1,0 +1,28 @@
+- name: install prereqs
+  package:
+    name: "{{ item }}"
+  with_items:
+    - java-1.8.0-openjdk-devel
+    - fontconfig 
+
+- name: template jenkins repo
+  template:
+    src: jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+
+- name: import jenkins rpm gpg key
+  rpm_key: 
+    state: present
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+- name: install jenkins from package
+  yum:
+    name: "{{ jenkins.version }}"
+
+
+- name: ensure jenkins is running
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+

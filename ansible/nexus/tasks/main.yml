@@ -1,0 +1,50 @@
+- name: create nexus user
+  user:
+    name: nexus
+    state: present 
+
+- name: create nexus group
+  group:
+    name: nexus
+    state: present 
+
+- name: create nexus dir
+  file:
+    path: /app
+    state: directory
+    owner: nexus
+    group: nexus
+
+- name: wget nexus tar
+  shell: cd /tmp && wget https://sonatype-download.global.ssl.fastly.net/nexus/3/nexus-3.0.2-02-unix.tar.gz
+  args:
+    creates: /tmp/nexus-3.0.2-02-unix.tar.gz
+
+- name: untar nexus tarball
+  shell: cd /tmp && tar -zxvf nexus-3.0.2-02-unix.tar.gz
+
+- name: mv it
+  shell: cd /tmp && mv nexus-3.0.2-02 nexus && mv nexus /app
+  args:
+    creates: /app/nexus
+- name: template nexus.rc
+  template:
+    src: nexus.rc
+    dest: /app/nexus/nexus.rc
+
+- name: template nexus.vmoptions
+  template:
+    src: nexus.vmoptions
+    dest: /app/nexus/bin/nexus.vmoptions
+
+- name: symlink nexus init script
+  file:
+    src: /app/nexus/bin/nexus
+    dest: /etc/init.d/nexus
+    state: link
+
+- name: ensure nexus is started and enabled
+  service:
+    name: nexus 
+    state: running
+    enabled: yes 
